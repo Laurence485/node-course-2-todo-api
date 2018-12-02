@@ -1,8 +1,9 @@
-var express = require('express');
-var bodyParser = require('body-parser'); //take json and convert to obj
-var {mongoose} = require('./db/mongoose');
-var {Todo} = require('./../models/todo');
-var {User} = require('./../models/users');
+const express = require('express');
+const bodyParser = require('body-parser'); //take json and convert to obj
+const {mongoose} = require('./db/mongoose');
+const {ObjectID} = require('mongodb');
+const {Todo} = require('./../models/todo');
+const {User} = require('./../models/users');
 
 var app = express();
 
@@ -27,15 +28,30 @@ app.get('/todos', (req,res) => {
 	});
 });
 
+// GET /todos/1234324 (using URL params)
+app.get('/todos/:id', (req,res) => {
+	var id = req.params.id;
+
+	//validate id using isValid
+	// 404 if not valid -> send back empty send
+	if(!ObjectID.isValid(id)) {
+		return res.status(404).send();
+	}
+
+	Todo.findById(id).then((todo) => {
+		if(!todo){
+			return res.status(404).send();
+		}
+		res.send({todo});
+		console.log('todo found!');
+	}).catch((e) => res.status(400).send());
+});
+
 app.listen(3000, () => { 
 	console.log('started on port 3000');
 });
 
 module.exports = {app};
-
-
-
-
 
 
 
